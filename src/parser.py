@@ -53,9 +53,8 @@ class NoticeProcessor(object):
                 parsed_urls = map(urlsplit, urls)
 
                 ## Calculate Tokens
-                extract_tokens = lambda x : get_tokens(x.path) | get_tokens(x.query)
-                token_list = (extract_tokens(x) for x in parsed_urls)   
-                all_tokens = reduce(operator.add, imap(Counter, token_list), Counter())
+                token_list = (get_tokens(x.path) | get_tokens(x.query) for x in parsed_urls)   
+                all_tokens = reduce(operator.add, imap(Counter, token_list))
 
                 common_tokens = self.apply_token_threshold(all_tokens)
                 if not common_tokens:
@@ -64,8 +63,8 @@ class NoticeProcessor(object):
                     report['common_tokens'] = common_tokens
 
                 ## Calculate Diversity
-                all_sites = [x.hostname for x in parsed_urls]
-                num_sites, num_urls = len(set(all_sites)), len(all_sites) 
+                sites = [x.hostname for x in parsed_urls]
+                num_sites, num_urls = len(set(sites)), len(sites) 
                 diversity = num_sites / num_urls
                 
                 if diversity < self.diversity_threshold:
