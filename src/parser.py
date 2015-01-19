@@ -5,16 +5,17 @@ import operator
 from urlparse import urlsplit
 from itertools import imap, ifilter
 from collections import Counter
-from pprint import pprint 
+from pprint import pprint
 
 from sys import argv
+
 
 def get_tokens(s, prune=True):
     ## remove ['.html', '.html', '.php', '.py', 'erb'] etc
     pruned = re.sub(r'\.\w{1,4}$', '', s, flags=re.IGNORECASE) if prune else s
     pre_split = re.split(r'\W', pruned)
     ## remove empty strings
-    clean_split = ifilter (lambda x : x, pre_split) 
+    clean_split = ifilter (lambda x : x, pre_split)
     return set(clean_split)
 
 
@@ -46,7 +47,8 @@ class NoticeProcessor(object):
         in the list are varied (over space or over time.)
         First we deal with space.
         '''
-        for work in self.notice['dmca']['works']:
+        col = self.notice['dmca']['works'] if __name__ == "__main__" else self.notice
+        for work in :
             try:
                 report = {}
                 urls = (x['url'] for x in work['infringing_urls'])
@@ -59,14 +61,14 @@ class NoticeProcessor(object):
                 common_tokens = self.apply_token_threshold(all_tokens)
                 if not common_tokens:
                     continue
-                else: 
+                else:
                     report['common_tokens'] = common_tokens
 
                 ## Calculate Diversity
                 sites = [x.hostname for x in parsed_urls]
-                num_sites, num_urls = len(set(sites)), len(sites) 
+                num_sites, num_urls = len(set(sites)), len(sites)
                 diversity = num_sites / num_urls
-                
+
                 if diversity < self.diversity_threshold:
                     continue
                 else:
@@ -77,7 +79,6 @@ class NoticeProcessor(object):
                 yield report
             except Exception as e:
                 print (e)
-
 
     def get_report(self):
         return list(self.make_report())
