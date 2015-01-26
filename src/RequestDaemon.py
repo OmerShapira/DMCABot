@@ -1,16 +1,17 @@
 import pycurl
-import logging
 import ijson
-import itertools
-from io import BytesIO, StringIO
+from io import BytesIO
 import time
 import RequestParser
+from pprint import pprint
+import logging
 
 curl = pycurl.Curl()
 URL_ROOT = "https://chillingeffects.org/"
 PATH_NOTICES = "notices/"
 PATH_SEARCH = "notices/search"
-# curl.set
+
+log = logging.getLogger("RequestDaemon")
 
 
 class Request(object):
@@ -28,11 +29,11 @@ class Request(object):
                 "Content-type: application/json"
             ])
 
-        url = URL_ROOT + PATH_SEARCH +"?"+ '&'.join(
-            [str(x)+"="+str(y) for x,y in self.params.items()])
-        self.curl.setopt(pycurl.URL,url)
+        url = URL_ROOT + PATH_SEARCH + "?" + '&'.join(
+            [str(x) + "=" + str(y) for x, y in self.params.items()])
+        self.curl.setopt(pycurl.URL, url)
         self.curl.setopt(pycurl.WRITEDATA, self.buffer)
-        print("Request: "+url)
+        log.info("Request: "+url)
         self.curl.perform()
         self.curl.close()
 
@@ -60,20 +61,20 @@ class Daemon(object):
 
     def request_time(self, time_in, time_out):
         request = Request(
-                date_received=repr(time_in)+".."+repr(time_out),
-                per_page=500
-            )
+            date_received=repr(time_in) + ".." + repr(time_out),
+            per_page=100
+        )
         request.execute()
         # TOOD: make future
         return request.getNoticeStream()
 
 
 if __name__ == '__main__':
-    rightnow = int((time.time() - 3600 * 60 * 24 * 3) * 10e6)
-    earlier =  int((time.time() - 3600 * 60 * 24 * 4) * 10e6)
+    rightnow = int((time.time()) * 10e6)
+    earlier  =  int((time.time() - 3600) * 10e6)
     d = Daemon()
     evts = d.request_time(earlier, rightnow)
     parsed_evts = (RequestParser.NoticeProcessor(v).get_report() for v in evts)
     for evt in parsed_evts:
-        if evt :
-            print(evt)
+        if evt:
+            pprint(evt)

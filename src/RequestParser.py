@@ -17,13 +17,15 @@ def get_tokens(s, prune=True):
     ## remove ['.html', '.html', '.php', '.py', 'erb'] etc
     pruned = re.sub(r'\.\w{1,4}$', '', s, flags=re.IGNORECASE) if prune else s
     pre_split = re.split(r'\W', pruned)
-    ## remove empty strings
+    # remove empty strings
     clean_split = filter (lambda x : x, pre_split)
     return set(clean_split)
 
 
 class NoticeProcessor(object):
-    def __init__(self, notice, token_threshold=5, common_proportion=0.25, diversity_threshold = 0.2, rules=None):
+    def __init__(self, 
+        notice, token_threshold=5, common_proportion=0.25, 
+        diversity_threshold = 0.2, rules=None):
         self.notice = notice
         self.token_threshold = token_threshold
         self.common_proportion = common_proportion
@@ -76,6 +78,12 @@ class NoticeProcessor(object):
                 if diversity < self.diversity_threshold:
                     continue
                 else:
+                    if 'id' in col:
+                        report['id'] = int(col['id'])
+                    if col['tags']:
+                        report['tags'] = col['tags']
+                    if 'description' in work:
+                        report['description'] = work['description']
                     report['num_urls'] = num_urls
                     report['num_sites'] = num_sites
                     report['diversity'] = diversity
